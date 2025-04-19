@@ -1,0 +1,55 @@
+vector<float> dijkstra(vector<vector<pair<int, int>>>& adjMat, int nodes, int start) {
+    vector<float> dist(nodes, INT_MAX);
+    vector<bool> visited(nodes, false);
+    float a = 0.5;
+    float b = 1.0;
+    dist[start] = 0;
+
+    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> pq;
+    pq.push({ 0, start });
+
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        float currentDist = pq.top().first;
+        pq.pop();
+
+        if (visited[u]) continue;
+        visited[u] = true;
+
+        for (int v = 0; v < nodes; v++) {
+            if (adjMat[u][v].first != INT_MAX && !visited[v]) {
+                int difficulty = adjMat[u][v].first;
+                int time = adjMat[u][v].second;
+                float edgeWeight = a * time + b * difficulty;// more priority to time less prority to difficulty
+                float newDist = currentDist + edgeWeight;
+
+                if (newDist < dist[v]) {
+                    dist[v] = newDist;
+                    pq.push({ newDist, v });
+                }
+            }
+        }
+    }
+
+    return dist;
+}
+
+vector<float> computeHeuristic(vector<vector<pair<int, int>>>& adjMat, int goal) {
+    int nodes = adjMat.size();
+    vector<float> shortestDistToGoal = dijkstra(adjMat, nodes, goal);
+    vector<float> heuristic(nodes);
+    float a = 0.5;
+    float b = 1.0;
+
+    for (int i = 0; i < nodes; i++) {
+        if (adjMat[i][goal].first != INT_MAX) {
+            heuristic[i] = a * adjMat[i][goal].second + b * shortestDistToGoal[i];// more prority to shortest dist(relevance) less prority to difficulty level 
+        }
+
+        else {
+            heuristic[i] = 0.0;
+        }
+    }
+
+    return heuristic;
+}
